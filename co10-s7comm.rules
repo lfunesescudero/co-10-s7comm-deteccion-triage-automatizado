@@ -1,0 +1,1 @@
+alert tcp any any -> $HOME_NET 10201 (msg:"CO10 - S7comm Userdata (lectura SZL) hacia Conpot"; flow:established,to_server; content:"|03 00|"; depth:2; content:"|32 07|"; offset:7; depth:2; classtype:attempted-recon; sid:9001001; rev:1;)

@@ -1,0 +1,11 @@
+[
+  {
+    "veredicto": "REVISAR",
+    "ip_origen": "172.17.0.1",
+    "regla": "CO10 - S7comm Userdata (lectura SZL) hacia Conpot",
+    "severidad_suricata": 2,
+    "puntaje_abuseipdb": 0,
+    "ip_publica": false,
+    "momento": "2026-10-22T00:14:36.366002+0200"
+  }
+]
