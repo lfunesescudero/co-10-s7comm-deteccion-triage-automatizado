@@ -1,0 +1,216 @@
+[
+  {
+    "updatedAt": "2026-10-21T21:39:21.785Z",
+    "createdAt": "2026-10-19T21:48:02.854Z",
+    "id": "hwBuyBI5z4o6ncK7",
+    "name": "My workflow",
+    "description": null,
+    "active": true,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "suricata",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.2,
+        "position": [
+          0,
+          0
+        ],
+        "id": "aaa69c7a-0f0a-4072-a5a8-c3f3e8eaec24",
+        "name": "Webhook",
+        "webhookId": "61088268-e953-4c13-8682-b4e6ee277acd"
+      },
+      {
+        "parameters": {
+          "url": "https://api.abuseipdb.com/api/v2/check",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "ipAddress",
+                "value": "={{ $json.body.src_ip }}"
+              },
+              {
+                "name": "maxAgeInDays",
+                "value": "90"
+              }
+            ]
+          },
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Accept",
+                "value": "application/json"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "position": [
+          224,
+          0
+        ],
+        "id": "d515a3ab-9c21-4e26-91ba-4cee6775ea26",
+        "name": "HTTP Request",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "ChEubkGPDtBAe0Pa",
+            "name": "Header Auth account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "1fbb6ec1-6b10-41fc-8ea8-7385dd5510f4",
+                "leftValue": "={{ $json.data.abuseConfidenceScore }}",
+                "rightValue": 50,
+                "operator": {
+                  "type": "number",
+                  "operation": "gte"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          448,
+          0
+        ],
+        "id": "141e0dd5-9328-457a-9f59-03fe20daca55",
+        "name": "If"
+      },
+      {
+        "parameters": {
+          "mode": "raw",
+          "jsonOutput": "={\n  \"veredicto\": \"REVISAR\",\n  \"ip_origen\": \"{{ $('Webhook').item.json.body.src_ip }}\",\n  \"regla\": \"{{ $('Webhook').item.json.body.alert.signature }}\",\n  \"severidad_suricata\": {{ $('Webhook').item.json.body.alert.severity }},\n  \"puntaje_abuseipdb\": {{ $json.data.abuseConfidenceScore }},\n  \"ip_publica\": {{ $json.data.isPublic }},\n  \"momento\": \"{{ $('Webhook').item.json.body.timestamp }}\"\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.5,
+        "position": [
+          672,
+          128
+        ],
+        "id": "64f0a62e-9ecf-4f04-8310-4e152496fc4d",
+        "name": "REVISAR"
+      },
+      {
+        "parameters": {
+          "mode": "raw",
+          "jsonOutput": "={\n  \"veredicto\": \"URGENTE\",\n  \"ip_origen\": \"{{ $('Webhook').item.json.body.src_ip }}\",\n  \"regla\": \"{{ $('Webhook').item.json.body.alert.signature }}\",\n  \"severidad_suricata\": {{ $('Webhook').item.json.body.alert.severity }},\n  \"puntaje_abuseipdb\": {{ $json.data.abuseConfidenceScore }},\n  \"ip_publica\": {{ $json.data.isPublic }},\n  \"momento\": \"{{ $('Webhook').item.json.body.timestamp }}\"\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.5,
+        "position": [
+          672,
+          -96
+        ],
+        "id": "db640634-1da3-497b-8fc9-17cad93b9701",
+        "name": "URGENTE"
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "HTTP Request",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "HTTP Request": {
+        "main": [
+          [
+            {
+              "node": "If",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If": {
+        "main": [
+          [
+            {
+              "node": "URGENTE",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "REVISAR",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate"
+    },
+    "staticData": null,
+    "meta": null,
+    "nodeGroups": [],
+    "pinData": {},
+    "versionId": "6e50874c-71d6-498c-bb87-42bd2d017077",
+    "activeVersionId": "6e50874c-71d6-498c-bb87-42bd2d017077",
+    "versionCounter": 44,
+    "triggerCount": 1,
+    "sourceWorkflowId": null,
+    "tags": [],
+    "shared": [
+      {
+        "updatedAt": "2026-10-19T21:48:02.872Z",
+        "createdAt": "2026-10-19T21:48:02.872Z",
+        "role": "workflow:owner",
+        "workflowId": "hwBuyBI5z4o6ncK7",
+        "projectId": "aK72oFeGNP2uAH6Q",
+        "project": {
+          "updatedAt": "2026-10-16T00:26:04.669Z",
+          "createdAt": "2026-10-16T00:00:57.581Z",
+          "id": "aK72oFeGNP2uAH6Q",
+          "name": "Lihuen Funes Escudero <lfunesescudero@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "5c8906b7-95e1-4051-90f5-8393db4ef93a"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": "CO-10 v1 flujo completo",
+      "description": ""
+    }
+  }
+]

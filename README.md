@@ -23,3 +23,5 @@ Conpot, Docker, Suricata 8.0.6, n8n Community Edition, AbuseIPDB API v2, Nmap, B
 ## Nota
 
 La IP pública del entorno se omitió en la evidencia publicada.
+
+Versión de n8n utilizada: 2.43.6 (Docker). El workflow exportado está en n8n_workflow_co10.json.
